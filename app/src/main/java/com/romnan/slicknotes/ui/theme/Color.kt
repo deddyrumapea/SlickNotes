@@ -9,7 +9,7 @@ val Teal200 = Color(0xFF03DAC5)
 
 val Green500 = Color(0xFF1EB980)
 val Teal700 = Color(0xFF045D56)
-val Gold300 = Color(0xFFFF6859)
+val Rose300 = Color(0xFFFF6859)
 val Yellow300 = Color(0xFFFFCF44)
 val Lavender200 = Color(0xFFB15DFF)
 val Turquoise200 = Color(0xFF72DEFF)
