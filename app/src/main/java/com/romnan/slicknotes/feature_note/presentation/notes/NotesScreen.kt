@@ -5,18 +5,20 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Sort
+import androidx.compose.material.Scaffold
+import androidx.compose.material.SnackbarResult
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.romnan.slicknotes.R
+import com.romnan.slicknotes.feature_note.presentation.notes.components.AddNoteFab
 import com.romnan.slicknotes.feature_note.presentation.notes.components.NoteItem
+import com.romnan.slicknotes.feature_note.presentation.notes.components.NotesScreenAppBar
 import com.romnan.slicknotes.feature_note.presentation.notes.components.OrderSection
 import com.romnan.slicknotes.feature_note.presentation.util.Screen
 import kotlinx.coroutines.launch
@@ -27,6 +29,7 @@ fun NotesScreen(
     navController: NavController,
     viewModel: NotesViewModel = hiltViewModel()
 ) {
+    val resources = LocalContext.current.resources
     val state = viewModel.state.value
     val scaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
@@ -34,29 +37,19 @@ fun NotesScreen(
     Scaffold(
         scaffoldState = scaffoldState,
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { navController.navigate(Screen.AddEditNoteScreen.route) },
-                backgroundColor = MaterialTheme.colors.primary
-            ) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = "Add note")
-            }
+            AddNoteFab(onClick = { navController.navigate(Screen.AddEditNote.route) })
         }
+
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
+                .padding(16.dp, 8.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(text = "Your notes", style = MaterialTheme.typography.h4)
-                IconButton(onClick = { viewModel.onEvent(NotesEvent.ToggleOrderSection) }) {
-                    Icon(imageVector = Icons.Default.Sort, contentDescription = "Sort")
-                }
-            }
+            NotesScreenAppBar(
+                onToggleOrderSection = { viewModel.onEvent(NotesEvent.ToggleOrderSection) }
+            )
+
             AnimatedVisibility(
                 visible = state.isOrderSectionVisible,
                 enter = fadeIn() + slideInVertically(),
@@ -79,18 +72,18 @@ fun NotesScreen(
                         note = note,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable {
-                                navController.navigate(
-                                    Screen.AddEditNoteScreen.route
-                                            + "?noteId=${note.id}&noteColor=${note.color}"
-                                )
-                            },
+                            .clickable(onClick = {
+                                val arguments = "?${Screen.AddEditNote.ARG_NOTE_ID}=${note.id}" +
+                                        "&${Screen.AddEditNote.ARG_NOTE_COLOR}=${note.color}"
+
+                                navController.navigate(Screen.AddEditNote.route + arguments)
+                            }),
                         onDeleteClick = {
                             viewModel.onEvent(NotesEvent.DeleteNote(note))
                             scope.launch {
                                 val result = scaffoldState.snackbarHostState.showSnackbar(
-                                    message = "Note deleted",
-                                    actionLabel = "Undo"
+                                    message = resources.getString(R.string.note_deleted),
+                                    actionLabel = resources.getString(R.string.undo)
                                 )
                                 if (result == SnackbarResult.ActionPerformed) {
                                     viewModel.onEvent(NotesEvent.RestoreNote)

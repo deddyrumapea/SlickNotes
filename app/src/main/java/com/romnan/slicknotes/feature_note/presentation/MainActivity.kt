@@ -30,26 +30,30 @@ class MainActivity : ComponentActivity() {
                     val navController = rememberNavController()
                     NavHost(
                         navController = navController,
-                        startDestination = Screen.NotesScreen.route
+                        startDestination = Screen.Notes.route
                     ) {
-                        composable(route = Screen.NotesScreen.route) {
+                        composable(route = Screen.Notes.route) {
                             NotesScreen(navController = navController)
                         }
                         composable(
-                            route = Screen.AddEditNoteScreen.route
-                                    + "?noteId={noteId}&noteColor={noteColor}",
+                            route = Screen.AddEditNote.route +
+                                    "?${Screen.AddEditNote.ARG_NOTE_ID}" +
+                                    "={${Screen.AddEditNote.ARG_NOTE_ID}}" +
+                                    "&${Screen.AddEditNote.ARG_NOTE_COLOR}" +
+                                    "={${Screen.AddEditNote.ARG_NOTE_COLOR}}",
                             arguments = listOf(
-                                navArgument(name = "noteId") {
+                                navArgument(Screen.AddEditNote.ARG_NOTE_ID) {
                                     type = NavType.IntType
                                     defaultValue = -1
                                 },
-                                navArgument(name = "noteColor") {
+                                navArgument(Screen.AddEditNote.ARG_NOTE_COLOR) {
                                     type = NavType.IntType
                                     defaultValue = -1
                                 }
                             )
                         ) {
-                            val color = it.arguments?.getInt("noteColor") ?: -1
+                            val color =
+                                it.arguments?.getInt(Screen.AddEditNote.ARG_NOTE_COLOR) ?: -1
                             AddEditNoteScreen(navController = navController, noteColor = color)
                         }
                     }

@@ -17,10 +17,12 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
+import com.romnan.slicknotes.R
 import com.romnan.slicknotes.feature_note.domain.model.Note
 
 @Composable
@@ -79,7 +81,10 @@ fun NoteItem(
             )
         }
         IconButton(onClick = onDeleteClick, modifier = Modifier.align(Alignment.BottomEnd)) {
-            Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete note")
+            Icon(
+                imageVector = Icons.Default.Delete,
+                contentDescription = stringResource(R.string.delete_note)
+            )
         }
     }
 }

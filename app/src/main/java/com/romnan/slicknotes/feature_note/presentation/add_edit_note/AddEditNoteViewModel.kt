@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.romnan.slicknotes.feature_note.domain.model.InvalidNoteException
 import com.romnan.slicknotes.feature_note.domain.model.Note
 import com.romnan.slicknotes.feature_note.domain.use_case.NoteUseCases
+import com.romnan.slicknotes.feature_note.presentation.util.Screen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -36,7 +37,7 @@ class AddEditNoteViewModel @Inject constructor(
     val eventFlow = _eventFlow.asSharedFlow()
 
     init {
-        savedStateHandle.get<Int>("noteId")?.let { noteId ->
+        savedStateHandle.get<Int>(Screen.AddEditNote.ARG_NOTE_ID)?.let { noteId ->
             if (noteId != -1) {
                 viewModelScope.launch {
                     noteUseCases.find(noteId)?.also { note ->
