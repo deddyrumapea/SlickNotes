@@ -17,8 +17,8 @@ fun NoteTextField(
     hint: String,
     modifier: Modifier = Modifier,
     isHintVisible: Boolean = true,
-    textStyle: TextStyle = TextStyle(),
     singleLine: Boolean = false,
+    textStyle: TextStyle = TextStyle(),
     onValueChange: (String) -> Unit,
     onFocusChange: (FocusState) -> Unit
 ) {
