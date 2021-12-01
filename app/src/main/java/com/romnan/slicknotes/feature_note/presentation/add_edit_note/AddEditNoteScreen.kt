@@ -7,9 +7,9 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -24,6 +24,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.romnan.slicknotes.feature_note.domain.model.Note
 import com.romnan.slicknotes.feature_note.presentation.add_edit_note.components.NoteTextField
+import com.romnan.slicknotes.feature_note.presentation.add_edit_note.components.SaveNoteFab
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -36,19 +37,17 @@ fun AddEditNoteScreen(
     val titleState = viewModel.titleState.value
     val contentState = viewModel.contentState.value
     val scaffoldState = rememberScaffoldState()
+    val scope = rememberCoroutineScope()
     val backgroundAnimatable = remember {
         Animatable(Color(if (noteColor != -1) noteColor else viewModel.colorState.value))
     }
-    val scope = rememberCoroutineScope()
 
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collectLatest { event ->
             when (event) {
+                is AddEditNoteViewModel.UIEvent.SaveNote -> navController.navigateUp()
                 is AddEditNoteViewModel.UIEvent.ShowSnackbar -> {
                     scaffoldState.snackbarHostState.showSnackbar(message = event.message)
-                }
-                is AddEditNoteViewModel.UIEvent.SaveNote -> {
-                    navController.navigateUp()
                 }
             }
         }
@@ -57,14 +56,9 @@ fun AddEditNoteScreen(
     Scaffold(
         scaffoldState = scaffoldState,
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { viewModel.onEvent(AddEditNoteEvent.SaveNote) },
-                backgroundColor = MaterialTheme.colors.primary
-            ) {
-                Icon(imageVector = Icons.Default.Save, contentDescription = "Save note")
-            }
-        }) {
-
+            SaveNoteFab(onClick = { viewModel.onEvent(AddEditNoteEvent.SaveNote) })
+        }
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -107,32 +101,26 @@ fun AddEditNoteScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
             NoteTextField(
+                singleLine = true,
                 text = titleState.text,
                 hint = titleState.hint,
-                onValueChange = {
-                    viewModel.onEvent(AddEditNoteEvent.EnterTitle(it))
-                },
-                onFocusChange = {
-                    viewModel.onEvent(AddEditNoteEvent.ChangeTitleFocus(it))
-                },
                 isHintVisible = titleState.isHintVisible,
-                singleLine = true,
-                textStyle = MaterialTheme.typography.h5
+                textStyle = MaterialTheme.typography.h5,
+                onValueChange = { viewModel.onEvent(AddEditNoteEvent.EnterTitle(it)) },
+                onFocusChange = { viewModel.onEvent(AddEditNoteEvent.ChangeTitleFocus(it)) }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
             NoteTextField(
                 text = contentState.text,
                 hint = contentState.hint,
-                onValueChange = {
-                    viewModel.onEvent(AddEditNoteEvent.EnterContent(it))
-                },
-                onFocusChange = {
-                    viewModel.onEvent(AddEditNoteEvent.ChangeContentFocus(it))
-                },
                 isHintVisible = contentState.isHintVisible,
                 textStyle = MaterialTheme.typography.body1,
-                modifier = Modifier.fillMaxHeight()
+                onValueChange = { viewModel.onEvent(AddEditNoteEvent.EnterContent(it)) },
+                onFocusChange = { viewModel.onEvent(AddEditNoteEvent.ChangeContentFocus(it)) },
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth()
             )
         }
 
