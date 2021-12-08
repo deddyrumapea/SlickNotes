@@ -1,5 +1,11 @@
 package com.romnan.slicknotes.feature_note.presentation.add_edit_note
 
+import android.content.Intent
+import android.os.Bundle
+import android.speech.RecognitionListener
+import android.speech.RecognizerIntent
+import android.speech.SpeechRecognizer
+import android.util.Log
 import androidx.compose.animation.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -21,6 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -39,11 +46,45 @@ fun AddEditNoteScreen(
 ) {
     val titleState = viewModel.titleState.value
     val contentState = viewModel.contentState.value
+    val dictationState = viewModel.dictationState.value
+
+    val context = LocalContext.current
+
     val scaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
     val backgroundAnimatable = remember {
         Animatable(Color(if (noteColor != -1) noteColor else viewModel.colorState.value))
     }
+
+    val sr = SpeechRecognizer.createSpeechRecognizer(context)
+    val srIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+
+    if (dictationState.isListening) sr.startListening(srIntent)
+    else sr.stopListening()
+
+    sr.setRecognitionListener(object : RecognitionListener {
+        override fun onResults(results: Bundle?) {
+            val text =
+                results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                    ?.get(0)
+
+            text?.let {
+                viewModel.onEvent(AddEditNoteEvent.OnDictationResults(text))
+            }
+            Log.d("Hello", "ONResults sr")
+        }
+
+        override fun onReadyForSpeech(params: Bundle?) {}
+        override fun onBeginningOfSpeech() {}
+        override fun onRmsChanged(rmsdB: Float) {}
+        override fun onBufferReceived(buffer: ByteArray?) {}
+        override fun onEndOfSpeech() {}
+        override fun onError(error: Int) {
+            Log.d("SR", "onError: $error")
+        }
+        override fun onPartialResults(partialResults: Bundle?) {}
+        override fun onEvent(eventType: Int, params: Bundle?) {}
+    })
 
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collectLatest { event ->
@@ -70,7 +111,11 @@ fun AddEditNoteScreen(
             ) {
                 IconButton(
                     modifier = Modifier.padding(horizontal = 16.dp),
-                    onClick = { }
+                    onClick = {
+                        Log.d("Before", "AddEditNoteScreen: ${dictationState.isListening}")
+                        viewModel.onEvent(AddEditNoteEvent.StartStopDictation)
+                        Log.d("After", "AddEditNoteScreen: ${dictationState.isListening}")
+                    }
                 ) {
                     Icon(
                         imageVector = Icons.Default.Mic,

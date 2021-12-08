@@ -1,5 +1,6 @@
 package com.romnan.slicknotes.feature_note.presentation.add_edit_note
 
+import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.toArgb
@@ -23,6 +24,9 @@ class AddEditNoteViewModel @Inject constructor(
 ) :
     ViewModel() {
     private var currentNoteId: Int? = null
+
+    private val _dictationState = mutableStateOf(DictationState())
+    val dictationState: State<DictationState> = _dictationState
 
     private val _titleState = mutableStateOf(NoteTextFieldState(hint = "Enter title"))
     val titleState: State<NoteTextFieldState> = _titleState
@@ -51,6 +55,7 @@ class AddEditNoteViewModel @Inject constructor(
                             isHintVisible = false
                         )
                         _colorState.value = note.color
+                        _dictationState.value = dictationState.value.copy(false)
                     }
                 }
             }
@@ -59,33 +64,32 @@ class AddEditNoteViewModel @Inject constructor(
 
     fun onEvent(event: AddEditNoteEvent) {
         when (event) {
-            is AddEditNoteEvent.EnterTitle -> {
-                _titleState.value = titleState.value.copy(
-                    text = event.title
-                )
+            is AddEditNoteEvent.StartStopDictation -> {
+
+                Log.d("VM", "before onEvent: ${dictationState.value.isListening}")
+                _dictationState.value =
+                    dictationState.value.copy(isListening = !dictationState.value.isListening)
+                Log.d("VM", "after onEvent: ${dictationState.value.isListening}")
             }
 
-            is AddEditNoteEvent.ChangeTitleFocus -> {
-                _titleState.value = titleState.value.copy(
-                    isHintVisible = !event.focusState.isFocused && titleState.value.text.isBlank()
-                )
-            }
+            is AddEditNoteEvent.OnDictationResults -> _contentState.value =
+                contentState.value.copy(text = contentState.value.text + event.results)
 
-            is AddEditNoteEvent.EnterContent -> {
-                _contentState.value = contentState.value.copy(
-                    text = event.content
-                )
-            }
+            is AddEditNoteEvent.EnterTitle -> _titleState.value =
+                titleState.value.copy(text = event.title)
 
-            is AddEditNoteEvent.ChangeContentFocus -> {
-                _contentState.value = contentState.value.copy(
-                    isHintVisible = !event.focusState.isFocused && contentState.value.text.isBlank()
-                )
-            }
+            is AddEditNoteEvent.ChangeTitleFocus -> _titleState.value = titleState.value.copy(
+                isHintVisible = !event.focusState.isFocused && titleState.value.text.isBlank()
+            )
 
-            is AddEditNoteEvent.ChangeColor -> {
-                _colorState.value = event.color
-            }
+            is AddEditNoteEvent.EnterContent -> _contentState.value =
+                contentState.value.copy(text = event.content)
+
+            is AddEditNoteEvent.ChangeContentFocus -> _contentState.value = contentState.value.copy(
+                isHintVisible = !event.focusState.isFocused && contentState.value.text.isBlank()
+            )
+
+            is AddEditNoteEvent.ChangeColor -> _colorState.value = event.color
 
             is AddEditNoteEvent.SaveNote -> {
                 viewModelScope.launch {
