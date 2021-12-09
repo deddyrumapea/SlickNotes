@@ -24,6 +24,9 @@ class AddEditNoteViewModel @Inject constructor(
     ViewModel() {
     private var currentNoteId: Int? = null
 
+    private val _reminderState = mutableStateOf(NoteReminderState())
+    val reminderState: State<NoteReminderState> = _reminderState
+
     private val _titleState = mutableStateOf(NoteTextFieldState(hint = "Enter title"))
     val titleState: State<NoteTextFieldState> = _titleState
 
@@ -50,6 +53,9 @@ class AddEditNoteViewModel @Inject constructor(
                             text = note.content,
                             isHintVisible = false
                         )
+                        _reminderState.value = _reminderState.value.copy(
+                            timeInMillis = note.reminderTimeStamp
+                        )
                         _colorState.value = note.color
                     }
                 }
@@ -59,6 +65,12 @@ class AddEditNoteViewModel @Inject constructor(
 
     fun onEvent(event: AddEditNoteEvent) {
         when (event) {
+            is AddEditNoteEvent.ChangeReminder -> {
+                _reminderState.value = reminderState.value.copy(
+                    timeInMillis = event.reminderDateTime
+                )
+            }
+
             is AddEditNoteEvent.EnterTitle -> {
                 _titleState.value = titleState.value.copy(
                     text = event.title
@@ -96,6 +108,7 @@ class AddEditNoteViewModel @Inject constructor(
                                 title = titleState.value.text,
                                 content = contentState.value.text,
                                 timeStamp = System.currentTimeMillis(),
+                                reminderTimeStamp = reminderState.value.timeInMillis,
                                 color = colorState.value
                             )
                         )

@@ -7,7 +7,7 @@ import com.romnan.slicknotes.feature_note.domain.model.Note
 
 @Database(
     entities = [Note::class],
-    version = 1
+    version = 2
 )
 abstract class SlickNotesDatabase : RoomDatabase() {
     companion object{

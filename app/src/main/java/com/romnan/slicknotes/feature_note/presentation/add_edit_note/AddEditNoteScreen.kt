@@ -1,5 +1,8 @@
 package com.romnan.slicknotes.feature_note.presentation.add_edit_note
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
+import android.content.Context
 import androidx.compose.animation.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -10,7 +13,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -21,6 +25,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -28,8 +33,10 @@ import androidx.navigation.NavController
 import com.romnan.slicknotes.R
 import com.romnan.slicknotes.feature_note.domain.model.Note
 import com.romnan.slicknotes.feature_note.presentation.add_edit_note.components.NoteTextField
+import com.romnan.slicknotes.feature_note.presentation.util.AlarmReceiver
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.util.*
 
 @Composable
 fun AddEditNoteScreen(
@@ -37,6 +44,8 @@ fun AddEditNoteScreen(
     noteColor: Int,
     viewModel: AddEditNoteViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
+    val reminderState = viewModel.reminderState.value
     val titleState = viewModel.titleState.value
     val contentState = viewModel.contentState.value
     val scaffoldState = rememberScaffoldState()
@@ -70,11 +79,19 @@ fun AddEditNoteScreen(
             ) {
                 IconButton(
                     modifier = Modifier.padding(horizontal = 16.dp),
-                    onClick = { }
+                    onClick = {
+                        selectDateTime(
+                            context = context,
+                            oldTimeInMillis = reminderState.timeInMillis
+                        ) { selected ->
+                            viewModel.onEvent(AddEditNoteEvent.ChangeReminder(selected))
+                        }
+                    }
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Mic,
-                        contentDescription = stringResource(R.string.start_stop_speech_note)
+                        imageVector = if (reminderState.timeInMillis != null)
+                            Icons.Default.NotificationsActive else Icons.Outlined.Notifications,
+                        contentDescription = stringResource(R.string.reminder)
                     )
                 }
                 Row(modifier = Modifier.padding(16.dp)) {
@@ -106,7 +123,18 @@ fun AddEditNoteScreen(
                 }
                 IconButton(
                     modifier = Modifier.padding(horizontal = 16.dp),
-                    onClick = { viewModel.onEvent(AddEditNoteEvent.SaveNote) }
+                    onClick = {
+                        viewModel.onEvent(AddEditNoteEvent.SaveNote)
+                        val alarmReceiver = AlarmReceiver()
+                        reminderState.timeInMillis?.let { reminderTime ->
+                            alarmReceiver.setOneTimeReminder(
+                                context = context,
+                                timeInMillis = reminderTime,
+                                title = titleState.text,
+                                message = contentState.text
+                            )
+                        }
+                    }
                 ) {
                     Icon(
                         imageVector = Icons.Default.Check,
@@ -144,6 +172,27 @@ fun AddEditNoteScreen(
                 )
             }
         }
-
     }
+}
+
+fun selectDateTime(
+    context: Context,
+    oldTimeInMillis: Long?,
+    onSelected: (timeInMillis: Long) -> Unit
+) {
+    val calendar = Calendar.getInstance()
+    oldTimeInMillis?.let { calendar.timeInMillis = it }
+    val startYear = calendar.get(Calendar.YEAR)
+    val startMonth = calendar.get(Calendar.MONTH)
+    val startDay = calendar.get(Calendar.DAY_OF_MONTH)
+    val startHour = calendar.get(Calendar.HOUR_OF_DAY)
+    val startMinute = calendar.get(Calendar.MINUTE)
+
+    DatePickerDialog(context, { _, year, month, day ->
+        TimePickerDialog(context, { _, hour, minute ->
+            val selected = Calendar.getInstance()
+            selected.set(year, month, day, hour, minute)
+            onSelected(selected.timeInMillis)
+        }, startHour, startMinute, false).show()
+    }, startYear, startMonth, startDay).show()
 }
