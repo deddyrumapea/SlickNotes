@@ -24,7 +24,7 @@ class AddEditNoteViewModel @Inject constructor(
     ViewModel() {
     private var currentNoteId: Int? = null
 
-    private val _timestampState = mutableStateOf(NoteTimestampState(0))
+    private val _timestampState = mutableStateOf(NoteTimestampState(System.currentTimeMillis()))
     val timestampState: State<NoteTimestampState> = _timestampState
 
     private val _reminderState = mutableStateOf(NoteReminderState())
