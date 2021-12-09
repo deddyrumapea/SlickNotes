@@ -7,4 +7,5 @@
     <string name="delete_note">Delete note</string>
     <string name="save_note">Save note</string>
     <string name="start_stop_speech_note">Start/stop speech note</string>
+    <string name="reminder">Reminder</string>
 </resources>
