@@ -12,7 +12,6 @@ import android.provider.Settings
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.romnan.slicknotes.R
-import java.util.*
 
 class AlarmReceiver : BroadcastReceiver() {
     companion object {
@@ -42,8 +41,6 @@ class AlarmReceiver : BroadcastReceiver() {
 
         val pendingIntent = PendingIntent.getBroadcast(context, ID_NOTE_REMINDER, intent, 0)
         alarmManager.set(AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent)
-
-        Log.d("ONE TIME", "$timeInMillis")
     }
 
     private fun showReminderNotification(
