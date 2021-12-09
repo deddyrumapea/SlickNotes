@@ -8,4 +8,5 @@
     <string name="save_note">Save note</string>
     <string name="start_stop_speech_note">Start/stop speech note</string>
     <string name="reminder">Reminder</string>
+    <string name="datetime_format">MMM dd, yyyy HH:mm</string>
 </resources>
