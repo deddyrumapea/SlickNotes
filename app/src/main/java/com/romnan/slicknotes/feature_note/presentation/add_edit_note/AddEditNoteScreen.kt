@@ -83,15 +83,8 @@ fun AddEditNoteScreen(
                         selectDateTime(
                             context = context,
                             oldTimeInMillis = reminderState.timeInMillis
-                        ) { selectedTimeInMillis ->
-                            viewModel.onEvent(AddEditNoteEvent.ChangeReminder(selectedTimeInMillis))
-                            val alarmReceiver = AlarmReceiver()
-                            alarmReceiver.setOneTimeReminder(
-                                context = context,
-                                timeInMillis = selectedTimeInMillis,
-                                title = titleState.text,
-                                message = contentState.text
-                            )
+                        ) { selected ->
+                            viewModel.onEvent(AddEditNoteEvent.ChangeReminder(selected))
                         }
                     }
                 ) {
@@ -130,7 +123,18 @@ fun AddEditNoteScreen(
                 }
                 IconButton(
                     modifier = Modifier.padding(horizontal = 16.dp),
-                    onClick = { viewModel.onEvent(AddEditNoteEvent.SaveNote) }
+                    onClick = {
+                        viewModel.onEvent(AddEditNoteEvent.SaveNote)
+                        val alarmReceiver = AlarmReceiver()
+                        reminderState.timeInMillis?.let { reminderTime ->
+                            alarmReceiver.setOneTimeReminder(
+                                context = context,
+                                timeInMillis = reminderTime,
+                                title = titleState.text,
+                                message = contentState.text
+                            )
+                        }
+                    }
                 ) {
                     Icon(
                         imageVector = Icons.Default.Check,
