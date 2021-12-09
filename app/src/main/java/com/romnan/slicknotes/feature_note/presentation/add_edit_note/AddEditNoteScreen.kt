@@ -36,6 +36,7 @@ import com.romnan.slicknotes.feature_note.presentation.add_edit_note.components.
 import com.romnan.slicknotes.feature_note.presentation.util.AlarmReceiver
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 import java.util.*
 
 @Composable
@@ -48,6 +49,8 @@ fun AddEditNoteScreen(
     val reminderState = viewModel.reminderState.value
     val titleState = viewModel.titleState.value
     val contentState = viewModel.contentState.value
+    val timestampState = viewModel.timestampState.value
+
     val scaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
     val backgroundAnimatable = remember {
@@ -149,6 +152,17 @@ fun AddEditNoteScreen(
                     .background(backgroundAnimatable.value)
                     .padding(16.dp)
             ) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = SimpleDateFormat(
+                        "MMM dd, yyyy HH:mm",
+                        Locale.getDefault()
+                    ).format(timestampState.timestamp),
+                    style = MaterialTheme.typography.caption,
+                    color = MaterialTheme.colors.onSurface,
+                    maxLines = 1,
+                )
+                Spacer(modifier = Modifier.height(8.dp))
                 NoteTextField(
                     singleLine = true,
                     text = titleState.text,

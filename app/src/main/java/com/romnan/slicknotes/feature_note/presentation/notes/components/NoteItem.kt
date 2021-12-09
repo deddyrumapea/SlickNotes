@@ -24,6 +24,8 @@ import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
 import com.romnan.slicknotes.R
 import com.romnan.slicknotes.feature_note.domain.model.Note
+import java.text.SimpleDateFormat
+import java.util.*
 
 @Composable
 fun NoteItem(
@@ -76,8 +78,18 @@ fun NoteItem(
                 text = note.content,
                 style = MaterialTheme.typography.body1,
                 color = MaterialTheme.colors.onSurface,
-                maxLines = 5,
+                maxLines = 3,
                 overflow = TextOverflow.Ellipsis
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = SimpleDateFormat(
+                    "MMM dd, yyyy HH:mm",
+                    Locale.getDefault()
+                ).format(note.timeStamp),
+                style = MaterialTheme.typography.caption,
+                color = MaterialTheme.colors.onSurface,
+                maxLines = 1,
             )
         }
         IconButton(onClick = onDeleteClick, modifier = Modifier.align(Alignment.BottomEnd)) {
