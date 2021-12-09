@@ -7,8 +7,8 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.media.RingtoneManager
 import android.os.Build
+import android.provider.Settings
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.romnan.slicknotes.R
@@ -33,7 +33,7 @@ class AlarmReceiver : BroadcastReceiver() {
         }
     }
 
-    fun setOneTimeReminder(context: Context, dateTime: Calendar, title: String, message: String) {
+    fun setOneTimeReminder(context: Context, timeInMillis: Long, title: String, message: String) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
         val intent = Intent(context, AlarmReceiver::class.java)
@@ -41,9 +41,9 @@ class AlarmReceiver : BroadcastReceiver() {
         intent.putExtra(EXTRA_MESSAGE, message)
 
         val pendingIntent = PendingIntent.getBroadcast(context, ID_NOTE_REMINDER, intent, 0)
-        alarmManager.set(AlarmManager.RTC_WAKEUP, dateTime.timeInMillis, pendingIntent)
+        alarmManager.set(AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent)
 
-        Log.e("ONE TIME", "$dateTime")
+        Log.d("ONE TIME", "$timeInMillis")
     }
 
     private fun showReminderNotification(
@@ -57,23 +57,23 @@ class AlarmReceiver : BroadcastReceiver() {
 
         val notifMgr = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        val sound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-
-        val builder = NotificationCompat.Builder(context, channelId)
+        val notification = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle(title)
             .setContentText(message)
-            .setSound(sound)
+            .setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .build()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT
+                channelId, channelName, NotificationManager.IMPORTANCE_HIGH
             )
-            builder.setChannelId(channelId)
+            channel.enableLights(true)
+            channel.enableVibration(true)
             notifMgr.createNotificationChannel(channel)
         }
 
-        val notification = builder.build()
         notifMgr.notify(notifId, notification)
     }
 }

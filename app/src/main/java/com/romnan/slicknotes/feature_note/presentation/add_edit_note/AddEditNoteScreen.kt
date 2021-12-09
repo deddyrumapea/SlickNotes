@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -44,6 +45,7 @@ fun AddEditNoteScreen(
     viewModel: AddEditNoteViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
+    val reminderState = viewModel.reminderState.value
     val titleState = viewModel.titleState.value
     val contentState = viewModel.contentState.value
     val scaffoldState = rememberScaffoldState()
@@ -78,11 +80,15 @@ fun AddEditNoteScreen(
                 IconButton(
                     modifier = Modifier.padding(horizontal = 16.dp),
                     onClick = {
-                        selectDateTime(context) { dateTime ->
+                        selectDateTime(
+                            context = context,
+                            oldTimeInMillis = reminderState.timeInMillis
+                        ) { selectedTimeInMillis ->
+                            viewModel.onEvent(AddEditNoteEvent.ChangeReminder(selectedTimeInMillis))
                             val alarmReceiver = AlarmReceiver()
                             alarmReceiver.setOneTimeReminder(
                                 context = context,
-                                dateTime = dateTime,
+                                timeInMillis = selectedTimeInMillis,
                                 title = titleState.text,
                                 message = contentState.text
                             )
@@ -90,7 +96,8 @@ fun AddEditNoteScreen(
                     }
                 ) {
                     Icon(
-                        imageVector = Icons.Outlined.Notifications,
+                        imageVector = if (reminderState.timeInMillis != null)
+                            Icons.Default.NotificationsActive else Icons.Outlined.Notifications,
                         contentDescription = stringResource(R.string.reminder)
                     )
                 }
@@ -164,8 +171,13 @@ fun AddEditNoteScreen(
     }
 }
 
-fun selectDateTime(context: Context, onSelected: (dateTime: Calendar) -> Unit) {
+fun selectDateTime(
+    context: Context,
+    oldTimeInMillis: Long?,
+    onSelected: (timeInMillis: Long) -> Unit
+) {
     val calendar = Calendar.getInstance()
+    oldTimeInMillis?.let { calendar.timeInMillis = it }
     val startYear = calendar.get(Calendar.YEAR)
     val startMonth = calendar.get(Calendar.MONTH)
     val startDay = calendar.get(Calendar.DAY_OF_MONTH)
@@ -176,7 +188,7 @@ fun selectDateTime(context: Context, onSelected: (dateTime: Calendar) -> Unit) {
         TimePickerDialog(context, { _, hour, minute ->
             val selected = Calendar.getInstance()
             selected.set(year, month, day, hour, minute)
-            onSelected(selected)
+            onSelected(selected.timeInMillis)
         }, startHour, startMinute, false).show()
     }, startYear, startMonth, startDay).show()
 }

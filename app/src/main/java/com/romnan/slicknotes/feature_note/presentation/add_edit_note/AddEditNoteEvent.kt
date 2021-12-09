@@ -8,5 +8,6 @@ sealed class AddEditNoteEvent {
     data class EnterContent(val content: String) : AddEditNoteEvent()
     data class ChangeContentFocus(val focusState: FocusState) : AddEditNoteEvent()
     data class ChangeColor(val color: Int) : AddEditNoteEvent()
+    data class ChangeReminder(val reminderDateTime: Long? = null): AddEditNoteEvent()
     object SaveNote : AddEditNoteEvent()
 }

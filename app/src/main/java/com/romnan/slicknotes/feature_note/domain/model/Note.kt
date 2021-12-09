@@ -13,6 +13,7 @@ data class Note(
     val title: String,
     val content: String,
     val timeStamp: Long,
+    val reminderTimeStamp: Long? = null,
     val color: Int
 ) {
     companion object {
