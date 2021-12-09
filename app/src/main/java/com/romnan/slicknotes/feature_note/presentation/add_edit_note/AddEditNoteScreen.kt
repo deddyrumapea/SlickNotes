@@ -128,14 +128,16 @@ fun AddEditNoteScreen(
                     modifier = Modifier.padding(horizontal = 16.dp),
                     onClick = {
                         viewModel.onEvent(AddEditNoteEvent.SaveNote)
-                        val alarmReceiver = AlarmReceiver()
-                        reminderState.timeInMillis?.let { reminderTime ->
-                            alarmReceiver.setOneTimeReminder(
-                                context = context,
-                                timeInMillis = reminderTime,
-                                title = titleState.text,
-                                message = contentState.text
-                            )
+                        if (reminderState.hasChanged) {
+                            val alarmReceiver = AlarmReceiver()
+                            reminderState.timeInMillis?.let { reminderTime ->
+                                alarmReceiver.setOneTimeReminder(
+                                    context = context,
+                                    timeInMillis = reminderTime,
+                                    title = titleState.text,
+                                    message = contentState.text
+                                )
+                            }
                         }
                     }
                 ) {
@@ -155,7 +157,7 @@ fun AddEditNoteScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = SimpleDateFormat(
-                        "MMM dd, yyyy HH:mm",
+                        stringResource(R.string.datetime_format),
                         Locale.getDefault()
                     ).format(timestampState.timestamp),
                     style = MaterialTheme.typography.caption,

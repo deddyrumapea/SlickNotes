@@ -75,7 +75,8 @@ class AddEditNoteViewModel @Inject constructor(
         when (event) {
             is AddEditNoteEvent.ChangeReminder -> {
                 _reminderState.value = reminderState.value.copy(
-                    timeInMillis = event.reminderDateTime
+                    timeInMillis = event.reminderDateTime,
+                    hasChanged = true
                 )
             }
 
